@@ -1,0 +1,70 @@
+#!/bin/bash
+
+if ! [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "spellcheck only supports macOS."
+    exit 1
+fi
+
+result_autospellingcorr="defaults read NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool"
+result_autotextcomp="defaults read NSGlobalDomain NSAutomaticTextCompletionEnabled -bool"
+
+spellcheck() {
+    if $result_autospellingcorr | grep -q "1"; then
+        defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
+        echo "Automatic spelling correction disabled."
+    elif $result_autospellingcorr | grep -q "0"; then
+        defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool true
+        echo "Automatic spelling correction enabled."
+    fi
+    if $result_autotextcomp | grep -q "1"; then
+        defaults write NSGlobalDomain NSAutomaticTextCompletionEnabled -bool false
+        echo "Automatic Text Completion disabled."
+    elif $result_autotextcomp | grep -q "0"; then
+        defaults write NSGlobalDomain NSAutomaticTextCompletionEnabled -bool true
+        echo "Automatic Text Completion enabled."
+    fi
+}
+
+if [ -z "$1" ]
+  then
+    spellcheck;
+fi
+
+help_msg() {
+    cat <<EOM
+Enable/Disable spellcheck on macOS.
+Usage: spellcheck [options]
+
+options:
+-s, --settings   Display current settings.
+-h, --help       Display this help and exit. 
+-v, --version    Display version information and exit.
+
+EOM
+    exit 0
+}
+
+show_settings() {
+    echo "Showing settings."
+    if $result_autospellingcorr | grep -q "1"; then
+        echo "Automatic spelling correction is enabled."
+    elif $result_autospellingcorr | grep -q "0"; then
+        echo "Automatic spelling correction is disabled."
+    fi
+    if $result_autotextcomp | grep -q "1"; then
+        echo "Automatic Text Completion is enabled."
+    elif $result_autotextcomp | grep -q "0"; then
+        echo "Automatic Text Completion is disabled."
+    fi
+    exit 0
+}
+
+
+case "$1" in
+    --help|-h) help_msg; exit 0
+    ;;
+    --version|-v) echo "Version 0.0.1"; exit 0
+    ;;
+    --settings|-s) show_settings;
+
+esac
